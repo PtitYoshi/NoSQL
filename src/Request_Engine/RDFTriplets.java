@@ -13,10 +13,8 @@ public class RDFTriplets {
 		this.o = no;
 	}
 
-	public void display() {
-		// TODO Auto-generated method stub
-		System.out.println("{"+s+","+p+","+o+"}");
-		
+	public String toString() {
+		return "{" + s + "," + p + "," + o + "}";
 	}
 
 }
