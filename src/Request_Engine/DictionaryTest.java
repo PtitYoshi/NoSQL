@@ -8,6 +8,7 @@ public class DictionaryTest {
 		// On attribue une map au dictionnaire pour cela
 		
 		//TEST
+		//Juste pour commit
 		System.out.println("Début du test !**");
 		
 		System.out.println("**Construction du TripletStore**");
