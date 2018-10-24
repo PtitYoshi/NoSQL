@@ -6,9 +6,11 @@ import java.util.Map.Entry;
 public class Dictionary {
 	
 	HashMap<Integer, String> dico;
+	HashMap<String, Integer> dicoInverse;
 	
 	public Dictionary()	{
 		dico = new HashMap<Integer, String>();
+		dicoInverse = new HashMap<String, Integer>();
 	}
 	
 	public void add(String s) {
@@ -16,12 +18,12 @@ public class Dictionary {
 		if (key != -1) 
 		{
 			dico.put(key, s);
+			dicoInverse.put(s, key);
 		}
 	}
 	
 	private int createNewKey(String s) {
-		if (dico.containsValue(s))
-		{
+		if (dicoInverse.containsKey(s)) {
 			return -1;
 		} else {
 			return dico.size();
@@ -29,12 +31,11 @@ public class Dictionary {
 	}
 	
 	public int getKeyByValue(String s) {
-		for (Entry<Integer, String> entry : dico.entrySet()){
-			if (entry.getValue().equals(s)) {
-				return entry.getKey();
-			}
-		}
-		return -1;
+		return dicoInverse.get(s);
+	}
+	
+	public int size() {
+		return dico.size();
 	}
 	
 	public String toString() {

@@ -18,6 +18,10 @@ public class Index {
 		store.add(new RDFTriplets(ns, np, no));
 	}
 	
+	public int size() {
+		return store.size();
+	}
+	
 	public String toString() {
 		return store.toString();
 	}
