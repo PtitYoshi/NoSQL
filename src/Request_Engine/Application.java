@@ -21,7 +21,7 @@ public class Application {
 		
 		
 		long fin = System.currentTimeMillis();
-		System.out.println("Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
+		System.out.println("++Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
 	}
 	
 	

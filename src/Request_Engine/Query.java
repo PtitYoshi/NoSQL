@@ -1,6 +1,7 @@
 package Request_Engine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Query {
 	String select;
@@ -20,10 +21,20 @@ public class Query {
 			int np = dico.getKeyFromValue(clauseWhereTriplet[1]);
 			int no = dico.getKeyFromValue(clauseWhereTriplet[2]);
 			
-			// optimisation possible : getPos ou getOps
-			if (i.getPos().get(np) != null) {
-				if (i.getPos().get(np).get(no) != null) {
-					res.addAll(i.getPos().get(np).get(no));
+			HashMap<Integer, Integer> freq = i.getFrequence();
+			
+			if (freq.get(np) <= freq.get(no)) {
+			
+				if (i.getPos().get(np) != null) {
+					if (i.getPos().get(np).get(no) != null) {
+						res.addAll(i.getPos().get(np).get(no));
+					}
+				}
+			} else {
+				if (i.getOps().get(np) != null) {
+					if (i.getOps().get(np).get(no) != null) {
+						res.addAll(i.getOps().get(np).get(no));
+					}
 				}
 			}
 			
