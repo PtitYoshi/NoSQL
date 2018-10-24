@@ -21,14 +21,22 @@ public class Test {
 		System.out.println("Dictionnaire : " + dico.size());
 		System.out.println("Index : " + index.size());
 		
-		
-		Query q = new Query("tet");
-		ArrayList<Integer> array = q.execute(dico, index);
-		for (Integer n : array) {
-			System.out.println(n + " : " + dico.getValueFromKey(n));
+		try {
+			ArrayList<Query> listQueries;
+			listQueries = QueryFactory.createFromFile("Q_1_eligibleregion.queryset");
+			for (Query q : listQueries) {
+				ArrayList<Integer> array = q.execute(dico, index);
+//				for (Integer n : array) {
+//					System.out.println(n + " : " + dico.getValueFromKey(n));
+//				}
+				// faire ce qu'on veut avec array
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-//		
 		long fin = System.currentTimeMillis();
 		System.out.println("Total en " + Long.toString(fin - debut) + " millisecondes");
 	}

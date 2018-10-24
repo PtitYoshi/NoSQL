@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class QueryFactory {
 	
-	public ArrayList<Query> createFromFile(String file) throws IOException
+	public static ArrayList<Query> createFromFile(String file) throws IOException
 	{
 		ArrayList<Query> queries = new ArrayList<Query>();
 		
@@ -31,17 +31,17 @@ public class QueryFactory {
 			
 			//System.out.println("ligne contient : "+line);
 			
-			line = line.toLowerCase();
+//			line = line.toLowerCase();
 			//System.out.println(line+" ENDLINE\n");
-			if(line.contains("select"))				//Extraction du select
+			if(line.contains("SELECT"))				//Extraction du select
 			{
-				select = line.substring(line.indexOf("select")+6, line.indexOf("where")).replaceAll(" ", "");
+				select = line.substring(line.indexOf("SELECT")+6, line.indexOf("WHERE")).replaceAll(" ", "");
 				//System.out.println("{"+select+"}\n");
 			}
 			
-			if(line.contains("where"))				//Extraction du where
+			if(line.contains("WHERE"))				//Extraction du where
 			{
-				 String tmpwhere = line.substring(line.indexOf("where")+5, line.indexOf("}")).replaceAll("[{}	]+", "");
+				 String tmpwhere = line.substring(line.indexOf("WHERE")+5, line.indexOf("}")).replaceAll("[{}	]+", "");
 				 String tmpstring = "";
 				 //System.out.println("{"+tmpwhere+"}\n");
 				 while(!tmpwhere.isEmpty())
