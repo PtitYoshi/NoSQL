@@ -30,8 +30,16 @@ public class Dictionary {
 		}		
 	}
 	
-	public int getKeyByValue(String s) {
-		return dicoInverse.get(s);
+	public int getKeyFromValue(String s) {
+		if (dicoInverse.get(s) != null) {
+			return dicoInverse.get(s);
+		} else {
+			return -1;
+		}
+	}
+	
+	public String getValueFromKey(int s) {
+		return dico.get(s);
 	}
 	
 	public int size() {

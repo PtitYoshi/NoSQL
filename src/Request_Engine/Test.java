@@ -6,10 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Test {
 
 	public static void main(String[] args) {
+		long debut = System.currentTimeMillis();
 //		tests();
 		
 		
@@ -18,7 +20,17 @@ public class Test {
 		lireFichier("500K.rdf", dico, index);
 		System.out.println("Dictionnaire : " + dico.size());
 		System.out.println("Index : " + index.size());
-
+		
+		
+		Query q = new Query("tet");
+		ArrayList<Integer> array = q.execute(dico, index);
+		for (Integer n : array) {
+			System.out.println(n + " : " + dico.getValueFromKey(n));
+		}
+		
+//		
+		long fin = System.currentTimeMillis();
+		System.out.println("Total en " + Long.toString(fin - debut) + " millisecondes");
 	}
 	
 	private static void tests() {
@@ -51,8 +63,7 @@ public class Test {
 			BufferedReader br = new BufferedReader(new FileReader(nomFichier));
 			String line;
 			int n = 0;
-			while ((line = br.readLine()) != null && n<10) {
-//				System.out.println(line);
+			while ((line = br.readLine()) != null && n<10000) {
 				String[] tab = new String[3];
 				tab = line.split("\\t");
 				if (tab[2].endsWith(" .")) {
@@ -62,9 +73,7 @@ public class Test {
 				d.add(tab[1]);
 				d.add(tab[2]);
 				i.add(d, tab[0], tab[1], tab[2]);
-				
 //				n++;
-//				System.out.println(tab[0] + " ; " + tab[1] + " ; " + tab[2]);
 			}
 			br.close();
 		} catch (IOException e) {
@@ -72,6 +81,6 @@ public class Test {
 		}
 		
 		long fin = System.currentTimeMillis();
-		System.out.println("Méthode exécutée en " + Long.toString(fin - debut) + " millisecondes");
+		System.out.println("Creation dico + index en " + Long.toString(fin - debut) + " millisecondes");
 	}
 }

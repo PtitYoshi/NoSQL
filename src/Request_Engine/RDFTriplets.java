@@ -12,6 +12,10 @@ public class RDFTriplets {
 		this.p = np;
 		this.o = no;
 	}
+	
+	public int getS() { return s; }
+	public int getP() { return p; }
+	public int getO() { return o; }
 
 	public String toString() {
 		return "{" + s + "," + p + "," + o + "}";
