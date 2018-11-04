@@ -1,8 +1,10 @@
 package Request_Engine;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -10,25 +12,67 @@ public class Application {
 	public static void main(String[] args) {
 		long debut = System.currentTimeMillis();
 		
+// Initialisaion des options
+		String queryFolder = null, dataFolder = null, outputFolder = null;
+		boolean verbose = false, export_results = false;
+
+// Lecture des arguments
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-queries")) {
+				queryFolder = args[i+1];
+			} else if (args[i].equals("-data")) {
+				dataFolder = args[i+1];
+			} else if (args[i].equals("-output")) {
+				outputFolder = args[i+1];
+			} else if (args[i].equals("-verbose")) {
+				verbose = true;
+			} else if (args[i].equals("-export_results")) {
+				export_results = true;
+			}
+		}
+		if (queryFolder == null || dataFolder == null || outputFolder == null) {
+			System.out.println("variable(s) non initialisée(s)");
+			System.exit(-1);
+		}
+		
+// Debut de l'application
 		ArrayList<Query> queries = new ArrayList<Query>();
 		Dictionary dico = new Dictionary();
 		Index index = new Index();
 		
 		long debutIndex = System.currentTimeMillis();
-		lireRepDico(dico, index, "sources"); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nom du rep en parametre
+		lireRepDico(dico, index, dataFolder);
 		long finIndex = System.currentTimeMillis();
-		System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(finIndex - debutIndex) + " millisecondes");
 		
 		long debutQuery = System.currentTimeMillis();
-		lireRepQuery(queries, "req"); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nom du rep en parametre
+		lireRepQuery(queries, queryFolder);
 		long finQuery = System.currentTimeMillis();
-		System.out.println("Temps de creation des requetes : " + Long.toString(finQuery - debutQuery) + " millisecondes");
 		
+		long debutExec = System.currentTimeMillis();
 		executeQueries(dico, index, queries);
+		long finExec = System.currentTimeMillis();
 		
+		long fin = System.currentTimeMillis();		
 		
-		long fin = System.currentTimeMillis();
-		System.out.println("++Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
+// Affichage dans la terminal si l'option verbose etait presente
+		if (verbose) {
+			System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(finIndex - debutIndex) + " millisecondes");
+			System.out.println("Temps de creation des requetes : " + Long.toString(finQuery - debutQuery) + " millisecondes");
+			System.out.println("Temps d'execution de toutes les requetes : " + Long.toString(finExec - debutExec) + " millisecondes");
+			System.out.println("Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
+		}
+		
+// Export des temps dexecution dans un fichier csv
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
+			bw.write("Creation index et dictionnaire, " + Long.toString(finIndex - debutIndex) + "ms");
+			bw.write("\nCreation requetes, " + Long.toString(finQuery - debutQuery) + "ms");
+			bw.write("\nExecution requetes, " + Long.toString(finExec - debutExec) + "ms");
+			bw.write("\nTemps total, " + Long.toString(fin - debut) + "ms");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -127,13 +171,9 @@ public class Application {
 	}
 
 	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries) {
-		long debut = System.currentTimeMillis();
-		
 		for (Query q : queries) {
 			ArrayList<Integer> array = q.execute(dico, index);
+//			System.out.println(array.size());
 		}
-		
-		long fin = System.currentTimeMillis();
-		System.out.println("Temps d'execution de toutes les requetes : " + Long.toString(fin - debut) + " millisecondes");
 	}
 }

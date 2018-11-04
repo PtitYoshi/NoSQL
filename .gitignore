@@ -2,3 +2,6 @@
 *.queryset
 *.rdf
 /bin/
+/output/
+/req/
+/data/
