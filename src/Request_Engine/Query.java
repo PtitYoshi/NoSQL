@@ -31,9 +31,9 @@ public class Query {
 					}
 				}
 			} else {
-				if (i.getOps().get(np) != null) {
-					if (i.getOps().get(np).get(no) != null) {
-						res.addAll(i.getOps().get(np).get(no));
+				if (i.getOps().get(no) != null) {
+					if (i.getOps().get(no).get(np) != null) {
+						res.addAll(i.getOps().get(no).get(np));
 					}
 				}
 			}

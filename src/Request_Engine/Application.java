@@ -1,6 +1,7 @@
 package Request_Engine;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,9 +14,15 @@ public class Application {
 		Dictionary dico = new Dictionary();
 		Index index = new Index();
 		
-		createIndexAndDictionary(dico, index, "500K.rdf");
-		createQueryList(queries, "Q_1_eligibleregion.queryset");
-		System.out.println(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ATTENTION : lire un repertoire plutot qu'un fichier");
+		long debutIndex = System.currentTimeMillis();
+		lireRepDico(dico, index, "sources"); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nom du rep en parametre
+		long finIndex = System.currentTimeMillis();
+		System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(finIndex - debutIndex) + " millisecondes");
+		
+		long debutQuery = System.currentTimeMillis();
+		lireRepQuery(queries, "req"); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nom du rep en parametre
+		long finQuery = System.currentTimeMillis();
+		System.out.println("Temps de creation des requetes : " + Long.toString(finQuery - debutQuery) + " millisecondes");
 		
 		executeQueries(dico, index, queries);
 		
@@ -25,12 +32,18 @@ public class Application {
 	}
 	
 	
-	
-	
+	private static void lireRepDico(Dictionary d, Index i, String folderName) {
+		File rep = new File(folderName);
+		if (rep.isDirectory()) {
+			String fileList[] = rep.list();
+			for (String f : fileList) {
+				lireRepDico(d, i, folderName + "/" + f);
+			}
+		} else {
+			createIndexAndDictionary(d, i, folderName);
+		}
+	}
 	private static void createIndexAndDictionary(Dictionary d, Index i, String fileName) {
-		long debut = System.currentTimeMillis();
-		
-// Lecture du fichier RDF
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(fileName));
 			String line;
@@ -47,14 +60,20 @@ public class Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		long fin = System.currentTimeMillis();
-		System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(fin - debut) + " millisecondes");
 	}
 	
+	private static void lireRepQuery(ArrayList<Query> list, String folderName) {
+		File rep = new File(folderName);
+		if (rep.isDirectory()) {
+			String fileList[] = rep.list();
+			for (String f : fileList) {
+				lireRepQuery(list, folderName + "/" + f);
+			}
+		} else {
+			createQueryList(list, folderName);
+		}
+	}
 	private static void createQueryList(ArrayList<Query> list, String fileName) {
-		long debut = System.currentTimeMillis();
-		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(fileName));
 			String line;
@@ -105,9 +124,6 @@ public class Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		long fin = System.currentTimeMillis();
-		System.out.println("Temps de creation des requetes : " + Long.toString(fin - debut) + " millisecondes");
 	}
 
 	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries) {
