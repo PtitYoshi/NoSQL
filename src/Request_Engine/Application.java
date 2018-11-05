@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class Application {
 	public static void main(String[] args) {
@@ -14,7 +15,7 @@ public class Application {
 		
 // Initialisaion des options
 		String queryFolder = null, dataFolder = null, outputFolder = null;
-		boolean verbose = false, export_results = false;
+		boolean verbose = false, export_results = false, export_stats = false;
 
 // Lecture des arguments
 		for (int i = 0; i < args.length; i++) {
@@ -27,7 +28,9 @@ public class Application {
 			} else if (args[i].equals("-verbose")) {
 				verbose = true;
 			} else if (args[i].equals("-export_results")) {
-				export_results = true;
+				export_results = true; 
+			} else if (args[i].equals("-export_stats")) {
+				export_stats = true; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! que fait l'export ? ("statistiques sur les req")
 			}
 		}
 		if (queryFolder == null || dataFolder == null || outputFolder == null) {
@@ -49,7 +52,7 @@ public class Application {
 		long finQuery = System.currentTimeMillis();
 		
 		long debutExec = System.currentTimeMillis();
-		executeQueries(dico, index, queries);
+		executeQueries(dico, index, queries, outputFolder, export_results);
 		long finExec = System.currentTimeMillis();
 		
 		long fin = System.currentTimeMillis();		
@@ -170,10 +173,19 @@ public class Application {
 		}
 	}
 
-	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries) {
-		for (Query q : queries) {
-			ArrayList<Integer> array = q.execute(dico, index);
-//			System.out.println(array.size());
+	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries, String outputFolder, boolean export_results) {
+		if (export_results) {
+			try {
+				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/results.csv"));
+				for (Query q : queries) {
+					ArrayList<Integer> array = q.execute(dico, index);
+//					String res = ;
+					bw.write("\n\"" + q + "\", " + array); // Mise en forme de l'array en csv
+				}
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

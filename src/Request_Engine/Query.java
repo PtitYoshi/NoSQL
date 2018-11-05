@@ -50,4 +50,12 @@ public class Query {
 		common.retainAll(a2);
 		return common;
 	}
+	
+	public String toString() {
+		String clause = "{ ";
+		for (String s : where) {
+			clause = clause + s;
+		}
+		return "SELECT " + select + " WHERE " + clause + " }";
+	}
 }
