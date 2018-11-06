@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class Application {
 	public static void main(String[] args) {
@@ -15,7 +14,7 @@ public class Application {
 		
 // Initialisaion des options
 		String queryFolder = null, dataFolder = null, outputFolder = null;
-		boolean output = false, verbose = false, export_results = false, export_stats = false;
+		boolean output = false, verbose = false, export_results = false, export_stats = false, workload_time = false;
 
 // Lecture des arguments
 		for (int i = 0; i < args.length; i++) {
@@ -31,9 +30,17 @@ public class Application {
 			} else if (args[i].equals("-export_results")) {
 				export_results = true; 
 			} else if (args[i].equals("-export_stats")) {
-				export_stats = true; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! que fait l'export ? ("statistiques sur les req")
-			} else if (args[i].equals("-workload_time")) {
+				export_stats = true;
+				try {
+					BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/stats.csv"));
+					bw.write("entete");
+					bw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				
+			} else if (args[i].equals("-workload_time")) {
+				workload_time = true;
 			}
 		}
 		if (queryFolder == null || dataFolder == null) {
@@ -60,24 +67,24 @@ public class Application {
 		long finQuery = System.currentTimeMillis();
 		
 		long debutExec = System.currentTimeMillis();
-		executeQueries(dico, index, queries, outputFolder, export_results);
+		executeQueries(dico, index, queries, outputFolder, export_results, export_stats);
 		long finExec = System.currentTimeMillis();
 		
 		long fin = System.currentTimeMillis();
-		
-		
-//		System.out.println(index.getFrequence().size());
-//		System.out.println(dico.size());
 		
 // Affichage dans la terminal si l'option verbose etait presente
 		if (verbose) {
 			System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(finIndex - debutIndex) + " millisecondes");
 			System.out.println("Temps de creation des requetes : " + Long.toString(finQuery - debutQuery) + " millisecondes");
+		}
+		if (workload_time) {
 			if (export_results) {
 				System.out.println("Temps d'execution de toutes les requetes (" + queries.size() + " requetes) et export : " + Long.toString(finExec - debutExec) + " millisecondes");
 			} else {
 				System.out.println("Temps d'execution de toutes les requetes (" + queries.size() + " requetes) : " + Long.toString(finExec - debutExec) + " millisecondes");
 			}
+		}
+		if (verbose) {
 			System.out.println("Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
 		}
 		
@@ -85,10 +92,15 @@ public class Application {
 		if (output) {
 			try {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
-				bw.write("Creation index et dictionnaire, " + Long.toString(finIndex - debutIndex) + "ms");
-				bw.write("\nCreation requetes, " + Long.toString(finQuery - debutQuery) + "ms");
-				bw.write("\nExecution " + queries.size() + " requetes, " + Long.toString(finExec - debutExec) + "ms");
-				bw.write("\nTemps total, " + Long.toString(fin - debut) + "ms");
+				bw.write("Nom methode, Description, Temps (ms);");
+				bw.write("\nlireRepDico, Creation de l'index et du dictionnaire, " + Long.toString(finIndex - debutIndex));
+				if (export_results) {
+					bw.write("\nlireRepQuery, Creation des requetes et ecriture dans le fichier d'export, " + Long.toString(finQuery - debutQuery));
+				} else {
+					bw.write("\nlireRepQuery, Creation des requetes, " + Long.toString(finQuery - debutQuery));
+				}
+				bw.write("\nexecuteQueries, Execution " + queries.size() + " requetes, " + Long.toString(finExec - debutExec));
+				bw.write("\nmain, Temps total, " + Long.toString(fin - debut));
 				bw.close();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -167,13 +179,17 @@ public class Application {
 		
 	}
 
-	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries, String outputFolder, boolean export_results) {
-		if (export_results) {
-			try {
+	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries, String outputFolder, boolean export_results, boolean export_stats) {
+		try {
+			BufferedWriter stats = null;
+			if (export_stats) {
+				stats = new BufferedWriter(new FileWriter(outputFolder + "/stats.csv"));
+			}
+			if (export_results) {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/results.csv"));
 				bw.write("Query, Results");
 				for (Query q : queries) {
-					ArrayList<Integer> array = q.execute(dico, index);
+					ArrayList<Integer> array = q.execute(dico, index, stats, export_stats);
 					String clauses = "";
 					for (Integer i : array) {
 						clauses += dico.getValueFromKey(i) + ", ";
@@ -181,13 +197,17 @@ public class Application {
 					bw.write("\n\"" + q + "\", " + clauses); // Mise en forme de l'array en csv
 				}
 				bw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			} else {
+				for (Query q : queries) {
+					q.execute(dico, index, stats, export_stats);
+				}
 			}
-		} else {
-			for (Query q : queries) {
-				q.execute(dico, index);
+			
+			if (export_stats) {
+				stats.close();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
