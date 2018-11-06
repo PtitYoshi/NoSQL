@@ -22,11 +22,17 @@ public class Application {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-queries")) {
 				queryFolder = args[++i];
+				if (queryFolder.startsWith("\"")) queryFolder.substring(1);
+				if (queryFolder.endsWith("\"")) queryFolder.substring(0, queryFolder.length()-1);
 			} else if (args[i].equals("-data")) {
 				dataFolder = args[++i];
+				if (dataFolder.startsWith("\"")) dataFolder.substring(1);
+				if (dataFolder.endsWith("\"")) dataFolder.substring(0, dataFolder.length()-1);
 			} else if (args[i].equals("-output")) {
 				output = true;
 				outputFolder = args[++i];
+				if (outputFolder.startsWith("\"")) outputFolder.substring(1);
+				if (outputFolder.endsWith("\"")) outputFolder.substring(0, outputFolder.length()-1);
 			} else if (args[i].equals("-verbose")) {
 				verbose = true;
 			} else if (args[i].equals("-export_results")) {
@@ -38,11 +44,11 @@ public class Application {
 			}
 		}
 		if (queryFolder == null || dataFolder == null) {
-			System.out.println("Queries folder and data folder are not optional");
+			System.out.println("Les options -queries et -data sont obligatoires");
 			System.exit(-1);
 		} else if (verbose || export_results || export_stats) {
 			if (!output) {
-				System.out.println("Output folder can't be empty");
+				System.out.println("L'option -output est obligatoire lors de l'utilisatio ndes options -verbose, -export_results ou -export_stats");
 				System.exit(-1);
 			}
 		}
@@ -104,7 +110,7 @@ public class Application {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
 				bw.write("Creation de l'index et du dictionnaire, " + Long.toString(tpsDico) + "ms");
 				bw.write("\nCreation de la liste des requetes, " + Long.toString(tpsQuery) + "ms");
-				bw.write("\nExecution de toutes les requetes, " + Long.toString(tpsExec) + "ms");
+				bw.write("\nExecution de toutes les requetes (" + queries.size() + " requetes), " + Long.toString(tpsExec) + "ms");
 				if (export_stats) { bw.write("\nExport des statistiques, " + Long.toString(tpsExportSta) + "ms"); }
 				if (export_results) { bw.write("\nExport des resultats, " + Long.toString(tpsExportRes) + "ms"); }
 				bw.write("\nTemps total, " + Long.toString(tpsAll) + "ms");
