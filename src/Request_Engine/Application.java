@@ -32,11 +32,18 @@ public class Application {
 				export_results = true; 
 			} else if (args[i].equals("-export_stats")) {
 				export_stats = true; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! que fait l'export ? ("statistiques sur les req")
+			} else if (args[i].equals("-workload_time")) {
+				
 			}
 		}
-		if (queryFolder == null || dataFolder == null || outputFolder == null) {
-			System.out.println("variable(s) non initialisée(s)");
+		if (queryFolder == null || dataFolder == null) {
+			System.out.println("Queries folder and data folder are not optional");
 			System.exit(-1);
+		} else if (verbose || export_results || export_stats) {
+			if (!output) {
+				System.out.println("Output folder can't be empty");
+				System.exit(-1);
+			}
 		}
 		
 // Debut de l'application
@@ -66,7 +73,11 @@ public class Application {
 		if (verbose) {
 			System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(finIndex - debutIndex) + " millisecondes");
 			System.out.println("Temps de creation des requetes : " + Long.toString(finQuery - debutQuery) + " millisecondes");
-			System.out.println("Temps d'execution de toutes les requetes (" + queries.size() + " requetes) : " + Long.toString(finExec - debutExec) + " millisecondes");
+			if (export_results) {
+				System.out.println("Temps d'execution de toutes les requetes (" + queries.size() + " requetes) et export : " + Long.toString(finExec - debutExec) + " millisecondes");
+			} else {
+				System.out.println("Temps d'execution de toutes les requetes (" + queries.size() + " requetes) : " + Long.toString(finExec - debutExec) + " millisecondes");
+			}
 			System.out.println("Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
 		}
 		
@@ -76,7 +87,7 @@ public class Application {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
 				bw.write("Creation index et dictionnaire, " + Long.toString(finIndex - debutIndex) + "ms");
 				bw.write("\nCreation requetes, " + Long.toString(finQuery - debutQuery) + "ms");
-				bw.write("\nExecution requetes, " + Long.toString(finExec - debutExec) + "ms");
+				bw.write("\nExecution " + queries.size() + " requetes, " + Long.toString(finExec - debutExec) + "ms");
 				bw.write("\nTemps total, " + Long.toString(fin - debut) + "ms");
 				bw.close();
 			} catch (IOException e) {
@@ -124,12 +135,10 @@ public class Application {
 				lireRepQuery(list, folderName + "/" + f);
 			}
 		} else {
-//			createQueryList(list, folderName);
-			createBis(list, folderName);
+			createQueryList(list, folderName);
 		}
 	}
-	
-	private static void createBis(ArrayList<Query> list, String fileName) {
+	private static void createQueryList(ArrayList<Query> list, String fileName) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(fileName));
 			String line, select = "";
@@ -147,7 +156,6 @@ public class Application {
 						where.add(clause);
 					}
 				}
-				
 				if (line.contains("}")) {
 					list.add(new Query(select, where));
 				}
@@ -163,9 +171,14 @@ public class Application {
 		if (export_results) {
 			try {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/results.csv"));
+				bw.write("Query, Results");
 				for (Query q : queries) {
 					ArrayList<Integer> array = q.execute(dico, index);
-					bw.write("\n\"" + q + "\", " + array); // Mise en forme de l'array en csv
+					String clauses = "";
+					for (Integer i : array) {
+						clauses += dico.getValueFromKey(i) + ", ";
+					}
+					bw.write("\n\"" + q + "\", " + clauses); // Mise en forme de l'array en csv
 				}
 				bw.close();
 			} catch (IOException e) {
