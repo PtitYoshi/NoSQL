@@ -16,7 +16,7 @@ public class Application {
 		
 // Initialisaion des options
 		String queryFolder = null, dataFolder = null, outputFolder = null;
-		boolean output = false, verbose = false, export_results = false, export_stats = false, workload_time = false;
+		boolean verbose = false, export_results = false, export_stats = false, workload_time = false;
 
 // Lecture des arguments
 		for (int i = 0; i < args.length; i++) {
@@ -29,7 +29,6 @@ public class Application {
 				if (dataFolder.startsWith("\"")) dataFolder.substring(1);
 				if (dataFolder.endsWith("\"")) dataFolder.substring(0, dataFolder.length()-1);
 			} else if (args[i].equals("-output")) {
-				output = true;
 				outputFolder = args[++i];
 				if (outputFolder.startsWith("\"")) outputFolder.substring(1);
 				if (outputFolder.endsWith("\"")) outputFolder.substring(0, outputFolder.length()-1);
@@ -43,14 +42,9 @@ public class Application {
 				workload_time = true;
 			}
 		}
-		if (queryFolder == null || dataFolder == null) {
-			System.out.println("Les options -queries et -data sont obligatoires");
+		if (queryFolder == null || dataFolder == null || outputFolder == null) {
+			System.out.println("Les options -queries, -data et -output sont obligatoires");
 			System.exit(-1);
-		} else if (verbose || export_results || export_stats) {
-			if (!output) {
-				System.out.println("L'option -output est obligatoire lors de l'utilisatio ndes options -verbose, -export_results ou -export_stats");
-				System.exit(-1);
-			}
 		}
 		
 // Debut de l'application
@@ -105,19 +99,17 @@ public class Application {
 			System.out.println("Temps d'execution total : " + Long.toString(tpsAll) + " millisecondes");
 		
 // Export des temps dexecution dans un fichier csv
-		if (output) {
-			try {
-				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
-				bw.write("Creation de l'index et du dictionnaire, " + Long.toString(tpsDico) + "ms");
-				bw.write("\nCreation de la liste des requetes, " + Long.toString(tpsQuery) + "ms");
-				bw.write("\nExecution de toutes les requetes (" + queries.size() + " requetes), " + Long.toString(tpsExec) + "ms");
-				if (export_stats) { bw.write("\nExport des statistiques, " + Long.toString(tpsExportSta) + "ms"); }
-				if (export_results) { bw.write("\nExport des resultats, " + Long.toString(tpsExportRes) + "ms"); }
-				bw.write("\nTemps total, " + Long.toString(tpsAll) + "ms");
-				bw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
+			bw.write("Creation de l'index et du dictionnaire, " + Long.toString(tpsDico) + "ms");
+			bw.write("\nCreation de la liste des requetes, " + Long.toString(tpsQuery) + "ms");
+			bw.write("\nExecution de toutes les requetes (" + queries.size() + " requetes), " + Long.toString(tpsExec) + "ms");
+			if (export_stats) { bw.write("\nExport des statistiques, " + Long.toString(tpsExportSta) + "ms"); }
+			if (export_results) { bw.write("\nExport des resultats, " + Long.toString(tpsExportRes) + "ms"); }
+			bw.write("\nTemps total, " + Long.toString(tpsAll) + "ms");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -198,7 +190,7 @@ public class Application {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/stats.csv"));
 			bw.write("Query,Nombre de resultat,Temps d'execution de la requete (ns),Methode utilise");
 			for (Query q : list) {
-				bw.write("\n\"" + q.toString() + "\"," + q.results.size() + "," + q.tps + "ns," + q.methode);
+				bw.write("\n\"" + q.toString() + "\"," + q.results.size() + "," + q.tps + "," + q.methode);
 			}
 			bw.close();
 		} catch (IOException e) {

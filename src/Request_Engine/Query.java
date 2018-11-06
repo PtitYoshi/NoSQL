@@ -47,6 +47,11 @@ public class Query {
 					}
 				}
 			}
+
+			if (res.size() ==0) {
+				resultat = res;
+				break;
+			}
 			
 			if (resultat == null) { resultat = res; }
 			else { resultat.retainAll(res); }
