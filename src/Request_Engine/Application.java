@@ -15,16 +15,17 @@ public class Application {
 		
 // Initialisaion des options
 		String queryFolder = null, dataFolder = null, outputFolder = null;
-		boolean verbose = false, export_results = false, export_stats = false;
+		boolean output = false, verbose = false, export_results = false, export_stats = false;
 
 // Lecture des arguments
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-queries")) {
-				queryFolder = args[i+1];
+				queryFolder = args[++i];
 			} else if (args[i].equals("-data")) {
-				dataFolder = args[i+1];
+				dataFolder = args[++i];
 			} else if (args[i].equals("-output")) {
-				outputFolder = args[i+1];
+				output = true;
+				outputFolder = args[++i];
 			} else if (args[i].equals("-verbose")) {
 				verbose = true;
 			} else if (args[i].equals("-export_results")) {
@@ -55,26 +56,32 @@ public class Application {
 		executeQueries(dico, index, queries, outputFolder, export_results);
 		long finExec = System.currentTimeMillis();
 		
-		long fin = System.currentTimeMillis();		
+		long fin = System.currentTimeMillis();
+		
+		
+//		System.out.println(index.getFrequence().size());
+//		System.out.println(dico.size());
 		
 // Affichage dans la terminal si l'option verbose etait presente
 		if (verbose) {
 			System.out.println("Temps de creation de l'index et du dictionnaire : " + Long.toString(finIndex - debutIndex) + " millisecondes");
 			System.out.println("Temps de creation des requetes : " + Long.toString(finQuery - debutQuery) + " millisecondes");
-			System.out.println("Temps d'execution de toutes les requetes : " + Long.toString(finExec - debutExec) + " millisecondes");
+			System.out.println("Temps d'execution de toutes les requetes (" + queries.size() + " requetes) : " + Long.toString(finExec - debutExec) + " millisecondes");
 			System.out.println("Temps d'execution total : " + Long.toString(fin - debut) + " millisecondes");
 		}
 		
 // Export des temps dexecution dans un fichier csv
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
-			bw.write("Creation index et dictionnaire, " + Long.toString(finIndex - debutIndex) + "ms");
-			bw.write("\nCreation requetes, " + Long.toString(finQuery - debutQuery) + "ms");
-			bw.write("\nExecution requetes, " + Long.toString(finExec - debutExec) + "ms");
-			bw.write("\nTemps total, " + Long.toString(fin - debut) + "ms");
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (output) {
+			try {
+				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/verbose.csv"));
+				bw.write("Creation index et dictionnaire, " + Long.toString(finIndex - debutIndex) + "ms");
+				bw.write("\nCreation requetes, " + Long.toString(finQuery - debutQuery) + "ms");
+				bw.write("\nExecution requetes, " + Long.toString(finExec - debutExec) + "ms");
+				bw.write("\nTemps total, " + Long.toString(fin - debut) + "ms");
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -117,60 +124,39 @@ public class Application {
 				lireRepQuery(list, folderName + "/" + f);
 			}
 		} else {
-			createQueryList(list, folderName);
+//			createQueryList(list, folderName);
+			createBis(list, folderName);
 		}
 	}
-	private static void createQueryList(ArrayList<Query> list, String fileName) {
+	
+	private static void createBis(ArrayList<Query> list, String fileName) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(fileName));
-			String line;
-			while((line = br.readLine())!=null) { // Pour chaque ligne
-				String select="";
-				ArrayList<String> where = new ArrayList<String>();
-				String tmpline="";
-				
-				while(!line.contains("}")&&tmpline!=null)				//Recuperation d'une requête
-				{
-					tmpline=br.readLine();
-					line+=tmpline;
-				}
-				if(tmpline==null)
-					break;
-				if(line.contains("SELECT"))				//Extraction du select
-				{
-					select = line.substring(line.indexOf("SELECT")+6, line.indexOf("WHERE")).replaceAll(" ", "");
+			String line, select = "";
+			ArrayList<String> where = new ArrayList<String>();
+			while ((line = br.readLine()) != null) {
+				if (line.startsWith("SELECT")) {
+					select = line.substring(line.indexOf("SELECT")+6, line.indexOf("WHERE")).replaceAll(" ", "");;
+					where = new ArrayList<String>();
+				} else {
+					String clause = line.replace("}", "").replace("\t", " ").trim();
+					if (line.startsWith(" ")) {
+						clause = clause.substring(1);
+					}
+					if (clause != null && clause.length() > 3) {
+						where.add(clause);
+					}
 				}
 				
-				if(line.contains("WHERE"))				//Extraction du where
-				{
-					 String tmpwhere = line.substring(line.indexOf("WHERE")+5, line.indexOf("}")).replaceAll("[{}	]+", "");
-					 String tmpstring = "";
-					 while(!tmpwhere.isEmpty())
-					 {
-						 if(!tmpwhere.startsWith(" "))
-						 {
-							 tmpstring += tmpwhere.substring(0,tmpwhere.indexOf(" ")+1);
-							 tmpwhere = tmpwhere.replace(tmpwhere.substring(0,tmpwhere.indexOf(" ")), "");
-						 }
-						 else
-						 {
-							 tmpwhere = tmpwhere.replaceFirst(" ", "");
-							 if(tmpwhere.startsWith("."))
-							 {
-								 where.add(tmpstring+".");
-								 tmpstring="";
-								 tmpwhere = tmpwhere.replaceFirst(".", "");
-							 }
-						 }
-					 }
+				if (line.contains("}")) {
+					list.add(new Query(select, where));
 				}
-				
-				list.add(new Query(select, where));
-			}			
+			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 	}
 
 	private static void executeQueries(Dictionary dico, Index index, ArrayList<Query> queries, String outputFolder, boolean export_results) {
@@ -179,12 +165,15 @@ public class Application {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(outputFolder + "/results.csv"));
 				for (Query q : queries) {
 					ArrayList<Integer> array = q.execute(dico, index);
-//					String res = ;
 					bw.write("\n\"" + q + "\", " + array); // Mise en forme de l'array en csv
 				}
 				bw.close();
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		} else {
+			for (Query q : queries) {
+				q.execute(dico, index);
 			}
 		}
 	}

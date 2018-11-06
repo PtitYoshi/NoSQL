@@ -25,7 +25,7 @@ public class Index {
 		int no = dico.getKeyFromValue(o);
 		base.add(new RDFTriplets(ns, np, no));
 		
-//		frequenceAdd(ns);
+		frequenceAdd(ns);
 		frequenceAdd(np);
 		frequenceAdd(no);
 		
