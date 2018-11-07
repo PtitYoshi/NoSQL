@@ -132,7 +132,7 @@ public class Application {
 			String line;
 			while ((line = br.readLine()) != null) { // Pour chaque ligne
 				String[] tab = new String[3];
-				tab = line.split("\\t"); // Split du triplet RDF en trois String
+				tab = line.trim().split(" "); // Split du triplet RDF en trois String
 				if (tab[2].endsWith(" .")) { tab[2] = tab[2].substring(0, tab[2].length()-2); } // Suppression du point en fin de ligne
 				d.add(tab[0]); // Ajout de la partie 1 dans le dictionnaire 
 				d.add(tab[1]);
