@@ -163,6 +163,9 @@ public class Application {
 			ArrayList<String> where = new ArrayList<String>();
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("SELECT")) {
+					if (!where.isEmpty()) {
+						list.add(new Query(select, where));
+					}
 					select = line.substring(line.indexOf("SELECT")+6, line.indexOf("WHERE")).replaceAll(" ", "");;
 					where = new ArrayList<String>();
 				} else {
@@ -173,9 +176,6 @@ public class Application {
 					if (clause != null && clause.length() > 3) {
 						where.add(clause);
 					}
-				}
-				if (line.contains("}")) {
-					list.add(new Query(select, where));
 				}
 			}
 			br.close();
